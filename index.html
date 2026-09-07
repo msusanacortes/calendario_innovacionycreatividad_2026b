@@ -210,31 +210,27 @@
   .badge.deliver{background:rgba(255,61,154,.15); color:var(--magenta); border:1px solid rgba(255,61,154,.4);}
   .badge.close{background:rgba(176,133,255,.15); color:var(--violet); border:1px solid rgba(176,133,255,.4);}
 
-  .hours{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
+  .topics{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
   }
-  .hour{
+  .topic{
     background:rgba(255,255,255,.03);
     border:1px solid var(--line);
     border-radius:8px;
-    padding:10px 12px;
-  }
-  .hour .t{
-    font-size:11px;
-    color:var(--lc);
-    font-weight:700;
-    margin-bottom:3px;
-    font-family:'Chakra Petch', sans-serif;
-  }
-  .hour .d{
+    padding:8px 12px;
     font-size:13.5px;
     color:var(--text);
+    display:flex;
+    align-items:center;
+    gap:8px;
   }
-
-  @media (max-width:560px){
-    .hours{grid-template-columns:1fr;}
+  .topic::before{
+    content:"•";
+    color:var(--lc);
+    font-size:16px;
+    line-height:1;
   }
 
   .xp-grid{
@@ -302,6 +298,111 @@
   }
   .biblio ul{margin:0; padding-left:20px; font-size:14px; color:var(--text);}
   .biblio li{margin-bottom:8px;}
+
+  /* ===== PROGRESS BAR & CHECKBOX STYLES ===== */
+  .progress-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 18px;
+    position: relative;
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 13.5px;
+  }
+  .progress-header span b { color: var(--cyan); }
+  .progress-track {
+    height: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--cyan), var(--lime));
+    transition: width 0.3s ease;
+  }
+  .btn-reset {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-soft);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-reset:hover {
+    color: var(--magenta);
+    border-color: var(--magenta);
+  }
+
+  /* Custom Checkbox Toggle */
+  .check-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    color: var(--text-soft);
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line);
+    transition: all 0.2s ease;
+  }
+  .check-label:hover {
+    border-color: var(--lc);
+    color: var(--text);
+  }
+  .check-label input {
+    display: none;
+  }
+  .custom-check {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1.5px solid var(--text-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex: none;
+  }
+  .custom-check::after {
+    content: "✓";
+    font-size: 11px;
+    font-weight: bold;
+    color: #0C0A1E;
+    display: none;
+  }
+  .check-label input:checked + .custom-check {
+    background: var(--lime);
+    border-color: var(--lime);
+  }
+  .check-label input:checked + .custom-check::after {
+    display: block;
+  }
+  .quest.completed {
+    border-left-color: var(--lime) !important;
+    background: linear-gradient(135deg, rgba(198,255,61,0.05), var(--panel));
+  }
+  .quest.completed .quest-id {
+    color: var(--lime);
+  }
+  .quest-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 </style>
 </head>
 <body>
@@ -325,15 +426,26 @@
     <div class="hero-meta">
       <span class="chip"><b>Clave</b> V2283 · 8 créditos</span>
       <span class="chip"><b>Horario</b> Lunes y miércoles, 11:00–13:00 h</span>
-      <span class="chip"><b>Periodo escolar</b> 17 ago – 4 dic 2026</span>
-      <span class="chip"><b>31 sesiones</b> distribuidas en 5 módulos</span>
+      <span class="chip"><b>Periodo escolar</b> 17 ago – 2 dic 2026</span>
+      <span class="chip"><b>29 sesiones</b> + 3 días festivos</span>
+    </div>
+
+    <!-- BARRA DE PROGRESO DE SESIONES -->
+    <div class="progress-section">
+      <div class="progress-header">
+        <span>Progreso de clases impartidas: <b id="progress-text">0 de 29 (0%)</b></span>
+        <button class="btn-reset" onclick="resetProgress()">Reiniciar marcas</button>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
     </div>
   </div>
 
   <div class="alert">
     <h3>⚠ Normativa de asistencia: 80% mínimo</h3>
     <p>Conforme al Reglamento General de Evaluación y Promoción de Alumnos de la Universidad de Guadalajara, es indispensable cumplir con un <strong>mínimo del 80% de asistencias</strong> para conservar el derecho a evaluación ordinaria.</p>
-    <p>En un total de 31 sesiones durante el semestre, el límite máximo permitido es de <strong>6 inasistencias</strong>. Se recomienda reservar este margen únicamente para eventualidades justificadas, ya que cada sesión pondera directamente en el 20% correspondiente a las dinámicas en clase.</p>
+    <p>En el total de sesiones lectivas del semestre, el límite máximo permitido es de <strong>6 inasistencias</strong>. Se recomienda reservar este margen únicamente para eventualidades justificadas.</p>
   </div>
 
   <!-- CALENDARIO -->
@@ -349,247 +461,407 @@
     </div>
     <div class="quests">
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S01</span><span class="quest-date">Lunes 17 ago</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Concepto de creatividad, originalidad y autenticidad</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Enfoques contemporáneos de la creatividad</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S01</span>
+          <span class="quest-date">Lunes 17 ago</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S01" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Concepto de creatividad, originalidad y autenticidad</div>
+          <div class="topic">Enfoques contemporáneos de la creatividad</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S02</span><span class="quest-date">Miércoles 19 ago</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Mitos y verdades sobre el pensamiento creativo</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Fases del proceso creativo</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S02</span>
+          <span class="quest-date">Miércoles 19 ago</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S02" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Mitos y verdades sobre el pensamiento creativo</div>
+          <div class="topic">Fases del proceso creativo</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S03</span><span class="quest-date">Lunes 24 ago</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Concepto y dimensiones de la innovación</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Clasificación y tipos de innovación</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S03</span>
+          <span class="quest-date">Lunes 24 ago</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S03" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Concepto y dimensiones de la innovación</div>
+          <div class="topic">Clasificación y tipos de innovación</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S04</span><span class="quest-date">Miércoles 26 ago</span><span class="badge close">CIERRE MÓDULO 1</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Diferenciación conceptual: innovación vs. cambio</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Análisis del perfil de la empresa innovadora</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S04</span>
+          <span class="quest-date">Miércoles 26 ago</span>
+          <div class="quest-actions">
+            <span class="badge close">CIERRE MÓDULO 1</span>
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S04" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Diferenciación conceptual: innovación vs. cambio</div>
+          <div class="topic">Análisis del perfil de la empresa innovadora</div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- MÓDULO 2 -->
   <div class="level" style="--lc:var(--magenta); --lg:var(--magenta-glow)">
     <div class="level-head">
       <span class="level-tag">MÓDULO 2</span>
       <h3>Herramientas y Metodologías para la Innovación</h3>
-      <span class="sub">15 sesiones · 31 ago – 19 oct</span>
+      <span class="sub">15 sesiones + 1 suspensión · 31 ago – 21 oct</span>
     </div>
     <div class="quests">
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S05</span><span class="quest-date">Lunes 31 ago</span><span class="badge done">SESIÓN IMPARTIDA</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Design Thinking — Fases del proceso</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Design Thinking — Aplicación metodológica en estudio de caso</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S05</span>
+          <span class="quest-date">Lunes 31 ago</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S05" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Teoría del Design Thinking — Fundamentos, fases y modelos de aplicación</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S06</span><span class="quest-date">Miércoles 2 sep</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Metodologías Ágiles — Principios fundamentales</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Forth Innovation Method</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S06</span>
+          <span class="quest-date">Miércoles 2 sep</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S06" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Taller Design Thinking — Empatización, definición, ideación, prototipado y validación</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S07</span><span class="quest-date">Lunes 7 sep</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Fundamentos de Lean Startup</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Estrategias de Design Sprint</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S07</span>
+          <span class="quest-date">Lunes 7 sep</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S07" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Fundamentos de Lean Startup y estrategias de Design Sprint</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S08</span><span class="quest-date">Miércoles 9 sep</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Marco SCRUM — Roles, rituales y artefactos</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Taller comparativo de metodologías de gestión</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S08</span>
+          <span class="quest-date">Miércoles 9 sep</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S08" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Marco SCRUM (roles, rituales, artefactos) y taller comparativo de metodologías</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S09</span><span class="quest-date">Lunes 14 sep</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Metodologías para el análisis de problemas</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Técnicas de análisis de tendencias y entorno</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S09</span>
+          <span class="quest-date">Lunes 14 sep</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S09" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Metodologías para el análisis de problemas, tendencias y entorno</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S10</span><span class="quest-date">Miércoles 16 sep</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Diseño de futuros y prospectiva</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Técnicas avanzadas de Brainstorming</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S10</span>
+          <span class="quest-date">Miércoles 16 sep</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S10" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Diseño de futuros, prospectiva y técnicas avanzadas de Brainstorming</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S11</span><span class="quest-date">Lunes 21 sep</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Metodología SCAMPER</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Organización de ideas con Mind Mapping</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S11</span>
+          <span class="quest-date">Lunes 21 sep</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S11" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Metodología SCAMPER y organización de ideas con Mind Mapping</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S12</span><span class="quest-date">Miércoles 23 sep</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Técnica de Seis Sombreros para Pensar</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Journaling estructurado para el desarrollo creativo</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S12</span>
+          <span class="quest-date">Miércoles 23 sep</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S12" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Técnica de Seis Sombreros para Pensar y Journaling estructurado</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S13</span><span class="quest-date">Lunes 28 sep</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Estrategias de prototipado rápido</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">El Método Da Vinci aplicado a la ideación</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S13</span>
+          <span class="quest-date">Lunes 28 sep</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S13" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Estrategias de prototipado rápido y el Método Da Vinci aplicado a la ideación</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S14</span><span class="quest-date">Miércoles 30 sep</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Documentación de procesos creativos y construcción de moodboards</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Mindfulness y enfoques de atención plena en la creatividad</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S14</span>
+          <span class="quest-date">Miércoles 30 sep</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S14" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Documentación de procesos creativos, moodboards y Mindfulness en la creatividad</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S15</span><span class="quest-date">Lunes 5 oct</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Factores de estímulo para la motivación creativa</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Generación e identificación de estímulos de innovación</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S15</span>
+          <span class="quest-date">Lunes 5 oct</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S15" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Factores de motivación creativa y generación de estímulos de innovación</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S16</span><span class="quest-date">Miércoles 7 oct</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Entrenamiento y desarrollo de funciones cognitivas</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Análisis del consumo de información y sesgos de confirmación</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S16</span>
+          <span class="quest-date">Miércoles 7 oct</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S16" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Entrenamiento de funciones cognitivas y análisis de consumo de información</div>
+        </div>
+      </div>
+      <!-- SUSPENSIÓN 12 DE OCTUBRE -->
+      <div class="quest" style="border-left-color: var(--gold); background: rgba(255,201,61,0.03);">
+        <div class="quest-top">
+          <span class="quest-id" style="color: var(--gold)">·</span>
+          <span class="quest-date" style="color: var(--gold)">Lunes 12 oct</span>
+          <span class="badge close" style="background: rgba(255,201,61,0.15); color: var(--gold); border-color: rgba(255,201,61,0.4);">SUSPENSIÓN OFICIAL DE LABORES</span>
+        </div>
+        <div class="topics">
+          <div class="topic" style="color: var(--gold);">Día de la Raza / Descubrimiento de América (Conmemoración oficial). Sin clase.</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S17</span><span class="quest-date">Lunes 12 oct</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Taller: Aplicación práctica de técnicas al proyecto escolar</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Sesión de desarrollo colaborativo en equipos</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S17</span>
+          <span class="quest-date">Miércoles 14 oct</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S17" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Taller: Aplicación práctica de técnicas y desarrollo colaborativo en equipos</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S18</span><span class="quest-date">Miércoles 14 oct</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Retroalimentación intermedia de avances en equipo</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Ajustes y afinación de entregables previos</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S18</span>
+          <span class="quest-date">Lunes 19 oct</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S18" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Retroalimentación intermedia de avances y afinación de entregables previos</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S19</span><span class="quest-date">Lunes 19 oct</span><span class="badge deliver">ENTREGA PARCIAL</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Entrega formal del avance del Proyecto Integrador</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Cierre del Módulo 2 y evaluación de avance</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S19</span>
+          <span class="quest-date">Miércoles 21 oct</span>
+          <div class="quest-actions">
+            <span class="badge deliver">ENTREGA PARCIAL</span>
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S19" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Entrega formal del avance del Proyecto Integrador y cierre del Módulo 2</div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- MÓDULO 3 -->
   <div class="level" style="--lc:var(--lime); --lg:var(--lime-glow)">
     <div class="level-head">
       <span class="level-tag">MÓDULO 3</span>
       <h3>Gestión de Equipos y Proyectos Creativos</h3>
-      <span class="sub">4 sesiones · 21 oct – 2 nov</span>
+      <span class="sub">4 sesiones + 1 suspensión · 26 oct – 9 nov</span>
     </div>
     <div class="quests">
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S20</span><span class="quest-date">Miércoles 21 oct</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">La organización dentro del entorno de industrias creativas</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Estructuras y dinámicas de la empresa creativa</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S20</span>
+          <span class="quest-date">Lunes 26 oct</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S20" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Estructuras, dinámicas y organización dentro de industrias creativas</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S21</span><span class="quest-date">Lunes 26 oct</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Aportación de la creatividad al valor empresarial</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Análisis de cultura organizacional en la industria interactiva y audiovisual</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S21</span>
+          <span class="quest-date">Miércoles 28 oct</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S21" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Aportación de la creatividad al valor empresarial y cultura organizacional</div>
+        </div>
+      </div>
+      <!-- SUSPENSIÓN 2 DE NOVIEMBRE -->
+      <div class="quest" style="border-left-color: var(--gold); background: rgba(255,201,61,0.03);">
+        <div class="quest-top">
+          <span class="quest-id" style="color: var(--gold)">·</span>
+          <span class="quest-date" style="color: var(--gold)">Lunes 2 nov</span>
+          <span class="badge close" style="background: rgba(255,201,61,0.15); color: var(--gold); border-color: rgba(255,201,61,0.4);">SUSPENSIÓN OFICIAL DE LABORES</span>
+        </div>
+        <div class="topics">
+          <div class="topic" style="color: var(--gold);">Conmemoración del Día de Muertos (Festividad oficial). Sin clase.</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S22</span><span class="quest-date">Miércoles 28 oct</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Diagnóstico del potencial creativo en equipos de trabajo</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Estrategias para la cohesión y la colaboración efectiva</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S22</span>
+          <span class="quest-date">Miércoles 4 nov</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S22" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Diagnóstico del potencial creativo, cohesión y colaboración en equipos</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S23</span><span class="quest-date">Lunes 2 nov</span><span class="badge close">CIERRE MÓDULO 3</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Construcción de ambientes y culturas de innovación</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Liderazgo creativo y dirección de proyectos</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S23</span>
+          <span class="quest-date">Lunes 9 nov</span>
+          <div class="quest-actions">
+            <span class="badge close">CIERRE MÓDULO 3</span>
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S23" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Construcción de culturas de innovación, liderazgo creativo y dirección</div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- MÓDULO 4 -->
   <div class="level" style="--lc:var(--violet); --lg:var(--violet-glow)">
     <div class="level-head">
       <span class="level-tag">MÓDULO 4</span>
       <h3>Innovación Sostenible y Tendencias Tecnológicas</h3>
-      <span class="sub">6 sesiones · 4–25 nov</span>
+      <span class="sub">4 sesiones + 1 suspensión · 11–25 nov</span>
     </div>
     <div class="quests">
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S24</span><span class="quest-date">Miércoles 4 nov</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Sostenibilidad como eje del desarrollo tecnológico e innovador</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Prácticas sostenibles en modelos de negocio contemporáneos</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S24</span>
+          <span class="quest-date">Miércoles 11 nov</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S24" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Sostenibilidad como eje tecnológico y prácticas sostenibles en negocios</div>
+        </div>
+      </div>
+      <!-- SUSPENSIÓN 16 DE NOVIEMBRE -->
+      <div class="quest" style="border-left-color: var(--gold); background: rgba(255,201,61,0.03);">
+        <div class="quest-top">
+          <span class="quest-id" style="color: var(--gold)">·</span>
+          <span class="quest-date" style="color: var(--gold)">Lunes 16 nov</span>
+          <span class="badge close" style="background: rgba(255,201,61,0.15); color: var(--gold); border-color: rgba(255,201,61,0.4);">SUSPENSIÓN OFICIAL DE LABORES</span>
+        </div>
+        <div class="topics">
+          <div class="topic" style="color: var(--gold);">Aniversario de la Revolución Mexicana (tercer lunes de noviembre). Sin clase.</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S25</span><span class="quest-date">Lunes 9 nov</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Alineación estratégica con los Objetivos de Desarrollo Sostenible (ODS)</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Fundamentos y características de las economías creativas</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S25</span>
+          <span class="quest-date">Miércoles 18 nov</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S25" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Alineación estratégica con los ODS y fundamentos de economías creativas</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S26</span><span class="quest-date">Miércoles 11 nov</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Impacto macroeconómico de la economía basada en el conocimiento</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Clasificación y alcance de las industrias culturales y creativas</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S26</span>
+          <span class="quest-date">Lunes 23 nov</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S26" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Propiedad intelectual, derechos de autor y Ley de Protección a la Propiedad Industrial</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">·</span><span class="quest-date">Lunes 16 nov</span><span class="badge close">SUSPENSIÓN OFICIAL DE LABORES</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">JORNADA COMPLETA</div><div class="d">Aniversario de la Revolución Mexicana (tercer lunes de noviembre). No computa como falta.</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S27</span>
+          <span class="quest-date">Miércoles 25 nov</span>
+          <div class="quest-actions">
+            <span class="badge close">CIERRE MÓDULO 4</span>
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S27" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
         </div>
-      </div>
-      <div class="quest">
-        <div class="quest-top"><span class="quest-id">S27</span><span class="quest-date">Miércoles 18 nov</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Sectores y campo de acción en el entorno digital</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Marco regulatorio: Ley de Protección a la Propiedad Industrial</div></div>
-        </div>
-      </div>
-      <div class="quest">
-        <div class="quest-top"><span class="quest-id">S28</span><span class="quest-date">Lunes 23 nov</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Propiedad intelectual y derechos de autor en medios digitales</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Estrategias de registro de patentes, marcas y licencias</div></div>
-        </div>
-      </div>
-      <div class="quest">
-        <div class="quest-top"><span class="quest-id">S29</span><span class="quest-date">Miércoles 25 nov</span><span class="badge close">CIERRE MÓDULO 4</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Ética profesional y responsabilidad social en medios creativos</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Taller: Verificación de cumplimiento legal y ético del proyecto integrador</div></div>
+        <div class="topics">
+          <div class="topic">Ética profesional, responsabilidad social y verificación legal/ética del proyecto</div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- MÓDULO FINAL -->
   <div class="level" style="--lc:var(--gold); --lg:var(--gold-glow)">
     <div class="level-head">
       <span class="level-tag">MÓDULO FINAL</span>
@@ -598,17 +870,28 @@
     </div>
     <div class="quests">
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S30</span><span class="quest-date">Lunes 30 nov</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Ensayo general y pilotaje de exposiciones finales</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Evaluación entre pares (peer review) y retroalimentación crítica</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S28</span>
+          <span class="quest-date">Lunes 30 nov</span>
+          <div class="quest-actions">
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S28" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Ensayo general, pilotaje de exposiciones finales y evaluación entre pares (peer review)</div>
         </div>
       </div>
       <div class="quest">
-        <div class="quest-top"><span class="quest-id">S31</span><span class="quest-date">Miércoles 2 dic</span><span class="badge deliver">PRESENTACIÓN FINAL</span></div>
-        <div class="hours">
-          <div class="hour"><div class="t">11:00–12:00</div><div class="d">Presentación ejecutiva del Proyecto Integrador Final — Bloque 1</div></div>
-          <div class="hour"><div class="t">12:00–13:00</div><div class="d">Presentación ejecutiva — Bloque 2 y cierre formal del curso</div></div>
+        <div class="quest-top">
+          <span class="quest-id">S29</span>
+          <span class="quest-date">Miércoles 2 dic</span>
+          <div class="quest-actions">
+            <span class="badge deliver">PRESENTACIÓN FINAL</span>
+            <label class="check-label"><input type="checkbox" class="session-checkbox" data-session="S29" onchange="toggleSession(this)"><span class="custom-check"></span> Impartida</label>
+          </div>
+        </div>
+        <div class="topics">
+          <div class="topic">Presentación ejecutiva del Proyecto Integrador Final (Bloques 1 y 2) y cierre del curso</div>
         </div>
       </div>
     </div>
@@ -703,5 +986,82 @@
   </div>
 
 </div>
+
+<script>
+  const STORAGE_KEY = 'udg_2026b_impartidas_v1';
+
+  function getSavedState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch(e) {
+      return {};
+    }
+  }
+
+  function saveState(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e) {}
+  }
+
+  function toggleSession(checkbox) {
+    const sessionId = checkbox.getAttribute('data-session');
+    const questCard = checkbox.closest('.quest');
+    
+    if (checkbox.checked) {
+      questCard.classList.add('completed');
+    } else {
+      questCard.classList.remove('completed');
+    }
+
+    const state = getSavedState();
+    state[sessionId] = checkbox.checked;
+    saveState(state);
+    updateProgressBar();
+  }
+
+  function updateProgressBar() {
+    const checkboxes = document.querySelectorAll('.session-checkbox');
+    const total = checkboxes.length;
+    let checkedCount = 0;
+
+    checkboxes.forEach(cb => {
+      if (cb.checked) checkedCount++;
+    });
+
+    const percent = Math.round((checkedCount / total) * 100);
+    document.getElementById('progress-text').innerText = `${checkedCount} de ${total} (${percent}%)`;
+    document.getElementById('progress-fill').style.width = `${percent}%`;
+  }
+
+  function resetProgress() {
+    if (!confirm('¿Deseas reiniciar la marca de clases impartidas?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    const checkboxes = document.querySelectorAll('.session-checkbox');
+    checkboxes.forEach(cb => {
+      cb.checked = false;
+      const questCard = cb.closest('.quest');
+      if (questCard) questCard.classList.remove('completed');
+    });
+    updateProgressBar();
+  }
+
+  // Cargar estado inicial al abrir la página
+  window.addEventListener('DOMContentLoaded', () => {
+    const state = getSavedState();
+    const checkboxes = document.querySelectorAll('.session-checkbox');
+
+    checkboxes.forEach(cb => {
+      const sessionId = cb.getAttribute('data-session');
+      if (state[sessionId]) {
+        cb.checked = true;
+        const questCard = cb.closest('.quest');
+        if (questCard) questCard.classList.add('completed');
+      }
+    });
+
+    updateProgressBar();
+  });
+</script>
 </body>
 </html>
